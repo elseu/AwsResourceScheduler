@@ -1,0 +1,165 @@
+name: DeployAndUpdateCode
+on:
+  push:
+    branches:
+    - master
+    tags:        
+    - '*'
+    paths:
+    - 'CloudFormationStacks/*.yml'
+    - '**.py'
+    - '*'
+
+jobs: 
+  cloudformation_deploy:
+    if: contains(github.event.head_commit.message, 'infra_deploy')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip -r SchedulerFunctions.zip python/
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip ResourcesApi.zip ResourcesApi.py 
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip SchedulerCheckAndApply.zip SchedulerCheckAndApply.py 
+          
+    - name: Configure AWS Credentials for ENV:LEARNING
+      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS Credentials for ENV:TESTING
+      if: contains(github.event.head_commit.message, 'ENV:TESTING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
+        aws-region: ${{ secrets.AWS_REGION }}         
+        
+    - name: CloudFormation Deploy S3 Stacks
+      run: | 
+        aws cloudformation deploy  --stack-name S3 --template-file CloudFormationStacks/S3.yml --no-fail-on-empty-changeset
+    - name: Copy files to S3 with the AWS CLI
+      run: |
+        ARN=$(aws cloudformation list-exports --query "Exports[?Name=='CodeSourceBucketARN'].Value" --no-paginate --output text )
+        BucketName=$(aws cloudformation list-exports --query "Exports[?Name=='CodeSourceBucketARN'].Value" --no-paginate --output text | sed 's/arn:aws:s3::://')
+        echo "BucketName $BucketName"
+        aws s3 cp SchedulerCheckAndApply.zip s3://$BucketName
+        aws s3 cp ResourcesApi.zip s3://$BucketName
+        aws s3 cp SchedulerFunctions.zip s3://$BucketName        
+    - name: CloudFormation Deploy Scheduler Stack
+      run: | 
+        aws cloudformation deploy  --stack-name Scheduler --template-file CloudFormationStacks/Scheduler.yml --no-fail-on-empty-changeset --capabilities CAPABILITY_NAMED_IAM
+
+
+  python_update_code:
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, 'python_update')"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip -r SchedulerFunctions.zip python/
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip ResourcesApi.zip ResourcesApi.py 
+    - uses: montudor/action-zip@v0.1.0
+      with:
+         args: zip SchedulerCheckAndApply.zip SchedulerCheckAndApply.py 
+         
+    - name: Configure AWS Credentials for ENV:LEARNING
+      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS Credentials for ENV:TESTING
+      if: contains(github.event.head_commit.message, 'ENV:TESTING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
+        aws-region: ${{ secrets.AWS_REGION }}   
+        
+    - name: Copy files to S3 with the AWS CLI
+      run: |
+        BucketName=$(aws cloudformation list-exports --query "Exports[?Name=='CodeSourceBucketName'].Value" --no-paginate --output text )
+        echo "BucketName $BucketName"
+        aws s3 cp SchedulerCheckAndApply.zip s3://$BucketName
+        aws s3 cp ResourcesApi.zip s3://$BucketName
+        aws s3 cp SchedulerFunctions.zip s3://$BucketName
+    - name: lambda code update
+      run: |     
+        BucketName=$(aws cloudformation list-exports --query "Exports[?Name=='CodeSourceBucketName'].Value" --no-paginate --output text )
+        echo "BucketName $BucketName"
+        LayerArn=$(aws cloudformation list-exports --query "Exports[?Name=='SchedulerFunctionsLayerARN'].Value" --no-paginate --output text | cut --delimiter=: --fields=1,2,3,4,5,6,7 )
+        echo "LayerArn: ${LayerArn}"
+        LayerName=$(echo $LayerArn | cut --fields=7 --delimiter=: )
+        echo "LayerName: ${LayerName}"
+        NewVersionNumber=$(aws lambda publish-layer-version --layer-name $LayerName --content S3Bucket=$BucketName,S3Key=SchedulerFunctions.zip --compatible-runtimes python3.6 python3.7 | awk '/"Version":/ {print $2}' | sed 's/,//')
+        echo "NewVersionNumber: ${NewVersionNumber}"
+        aws lambda update-function-code --function-name ResourcesApi --s3-bucket $BucketName --s3-key ResourcesApi.zip
+        aws lambda update-function-code --function-name SchedulerCheckAndApply --s3-bucket $BucketName --s3-key SchedulerCheckAndApply.zip
+        aws lambda update-function-configuration --function-name SchedulerCheckAndApply --layers "${LayerArn}:${NewVersionNumber}"
+        aws lambda update-function-configuration --function-name ResourcesApi --layers "${LayerArn}:${NewVersionNumber}"
+
+
+  DashBoard_update_setup:
+    if: "contains(github.event.head_commit.message, 'DashBoard_setup')"  
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+          
+    - name: Configure AWS Credentials for ENV:LEARNING
+      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS Credentials for ENV:TESTING
+      if: contains(github.event.head_commit.message, 'ENV:TESTING')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
+        aws-region: ${{ secrets.AWS_REGION }}   
+        
+    - name: apigateway get-sdk
+      run: |     
+            apiGatewayID=$(aws cloudformation list-exports --query "Exports[?Name=='apiGatewayID'].Value" --no-paginate --output text )
+            echo "apiGatewayID: $apiGatewayID"
+            aws apigateway get-sdk --rest-api-id ${apiGatewayID} --stage-name Prod --sdk-type javascript ApiGw-js-sdk.zip
+
+    - name: unzip sdk
+      uses: montudor/action-zip@v0.1.0
+      with:
+         args: unzip -o ApiGw-js-sdk.zip  -d DashBoard/dist/ApiGwJs/CognitoAccess/
+       
+    - name: javascript code update
+      run: |     
+            cognitoUserPoolID=$(aws cloudformation list-exports --query "Exports[?Name=='cognitoUserPoolID'].Value" --no-paginate --output text )
+            echo "cognitoUserPoolID: $cognitoUserPoolID"
+            sed -i "s/userPoolId:.*'[a-zA-Z0-9-]\+_[a-zA-Z0-9]\+',/userPoolId:'$cognitoUserPoolID',/" DashBoard/src/cognitoFn.js
+            UserPoolClientId=$(aws cloudformation list-exports --query "Exports[?Name=='UserPoolClientId'].Value" --no-paginate --output text )
+            echo "UserPoolClientId: $UserPoolClientId"
+            sed -i "s/userPoolWebClientId:.*'[a-zA-Z0-9]\+',/userPoolWebClientId:'$UserPoolClientId',/" DashBoard/src/cognitoFn.js
+            sed -i "s/var CognitoWebClientId = '[a-zA-Z0-9]\+'/var CognitoWebClientId = '$UserPoolClientId'/" DashBoard/dist/index.html
+            grep -r userPool DashBoard/src/
+            grep "CognitoWebClientId ="  DashBoard/dist/index.html             
+            cd DashBoard
+            npx webpack
+            DashBoardBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='DashBoardBucketName'].Value" --no-paginate --output text )
+            echo "DashBoardBucketName: $DashBoardBucketName"
+            aws s3 sync dist/ s3://${DashBoardBucketName} --exclude "node_modules/*" --exclude package-lock.json 
+            aws s3api list-objects --bucket ${DashBoardBucketName} | awk '/Key/ { print $2 }' | sed 's/,//g'|sed 's/"//g' | while read FILE ; do aws s3api put-object-acl --acl public-read --bucket ${DashBoardBucketName} --key $FILE;done
+    - name: cognito user setup
+      run: |   
+            cognitoUserPoolID=$(aws cloudformation list-exports --query "Exports[?Name=='cognitoUserPoolID'].Value" --no-paginate --output text )
+            aws cognito-idp admin-set-user-password --user-pool-id $cognitoUserPoolID --username "dashboard1" --password demodemo --permanent
