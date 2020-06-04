@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Cloudfront Resources Manager"
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues:
+      - testing
+      - preprod
+      - prod
+  EnvSubType:
+    Description: Environment Sub type.
+    Type: String
+    Default: main
+Mappings:
+  SSLCertificate:
+    testing:
+      #*.larciergroup-aws-testing.com (subdomain of *.larciergroup.com with subdomain) in us-east-1
+      certificate: arn:aws:acm:us-east-1:266121229060:certificate/7e6fe9ed-4665-4aa3-af78-c022f356fcc7
+Resources:
+  CloudFrontOriginaccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: resources-manager
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - Fn::Join:
+              - ''
+              - - resources-manager-
+                - Ref: EnvSubType
+                - .larciergroup-aws-
+                - Ref: EnvType
+                - .com
+        Origins:
+          - DomainName:
+              Fn::ImportValue:
+                Fn::Join:
+                  - ':'
+                  - - LarBizStradalexFrontS3
+                    - Ref: EnvType
+                    - Ref: EnvSubType
+                    - DomainName
+            OriginPath: /
+            Id: myS3Origin
+            S3OriginConfig:
+              OriginAccessIdentity:
+                Fn::Join:
+                  - ''
+                  - - origin-access-identity/cloudfront/
+                    - Ref: CloudFrontOriginaccessIdentity
+            OriginCustomHeaders:
+              - HeaderName: Access-Control-Allow-Origin
+                HeaderValue: '*'
+        Enabled: 'true'
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: myS3Origin
+          Compress: 'True'
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          MinTTL: '50'
+          MaxTTL: '172800'
+          ViewerProtocolPolicy: redirect-to-https
+        ViewerCertificate:
+          AcmCertificateArn:
+            Fn::FindInMap:
+              - SSLCertificate
+              - Ref: EnvType
+              - certificate
+          SslSupportMethod: sni-only
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+  DNSZone:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName:
+        Fn::Join:
+          - ''
+          - - Fn::Join:
+                - ''
+                - - larciergroup-aws-
+                  - Ref: EnvType
+                  - .com
+            - .
+      Comment: Zone apex alias targeted to Distribution Cloudfront.
+      RecordSets:
+        - Name:
+            Fn::Join:
+              - ''
+              - - resources-manager-
+                - Ref: EnvSubType
+                - .
+                - Fn::Join:
+                    - ''
+                    - - larciergroup-aws-
+                      - Ref: EnvType
+                      - .com
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2
+            DNSName:
+              Fn::GetAtt:
+                - CloudFrontDistribution
+                - DomainName
