@@ -45,7 +45,6 @@ Resources:
                     - Ref: EnvType
                     - Ref: EnvSubType
                     - DomainName
-            OriginPath: /
             Id: myS3Origin
             S3OriginConfig:
               OriginAccessIdentity:
