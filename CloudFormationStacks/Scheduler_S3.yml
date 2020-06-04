@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "S3 DashBoard"   
+Description: "S3 DashBoard"
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues:
+      - testing
+      - preprod
+      - prod
+  EnvSubType:
+    Description: Environment Sub type.
+    Type: String
+    Default: main
 Resources:
  DashBoardBucket:
      Type: AWS::S3::Bucket
@@ -44,4 +56,18 @@ Outputs:
       Ref: DashBoardBucket
     Description: DashBoardBucket Name
     Export:
-     Name: DashBoardBucketName   
+     Name: DashBoardBucketName
+  DomainName:
+    Description: S3 Storage Domain name
+    Value:
+      Fn::GetAtt:
+        - DashBoardBucket
+        - DomainName
+    Export:
+      Name:
+        Fn::Join:
+          - ':'
+          - - DashBoardBucket
+            - Ref: EnvType
+            - Ref: EnvSubType
+            - DomainName
