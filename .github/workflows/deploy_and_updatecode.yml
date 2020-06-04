@@ -43,7 +43,7 @@ jobs:
         
     - name: CloudFormation Deploy S3 Stacks
       run: | 
-        aws cloudformation deploy  --stack-name Scheduler-S3 --template-file CloudFormationStacks/Scheduler_S3.yml --no-fail-on-empty-changeset
+        aws cloudformation deploy  --stack-name Scheduler-S3 --template-file CloudFormationStacks/Scheduler_S3.yml --no-fail-on-empty-changeset --parameter-overrides EnvType=testing
         if test -f CloudFormationStacks/Scheduler_Cloudfront.yml; then aws cloudformation deploy  --stack-name Scheduler-Cloudfront --template-file CloudFormationStacks/Scheduler_Cloudfront.yml --no-fail-on-empty-changeset; fi
     - name: Copy files to S3 with the AWS CLI
       run: |
