@@ -17,8 +17,11 @@ Mappings:
   SSLCertificate:
     testing:
       #*.larciergroup-aws-testing.com (subdomain of *.larciergroup.com with subdomain) in us-east-1
-      certificate: arn:aws:acm:eu-west-1:266121229060:certificate/a8582a3b-b3ab-4abc-895b-ae6bac99cd0f
-      
+      # certificate:  arn:aws:acm:us-east-1:266121229060:certificate/3c7c5e30-434c-441c-a8c9-ee1d51a3d7ba
+      certificate:  arn:aws:acm:us-east-1:266121229060:certificate/a0454872-e04f-4a79-807d-07c36cad34f8
+                    
+
+                    
 Resources:
   CloudFrontOriginaccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
