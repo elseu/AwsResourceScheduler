@@ -31,7 +31,7 @@ Is an Application to automate and manage the start/stop of AWS Resources (EC2 | 
 
 Instalation is done through the workflow file in github.
 
-Two step instalation is needed
+Two step installation is needed
 
 First Backend ( Gateway API / Lambda / Cognito ) resources and next the Frontend (Javascript/HTML)
 
@@ -39,12 +39,12 @@ The Username Password is generated in the GitHub Action. It echoes in the github
 A simple test with jest.js in included in the workflow
 
 
-Issue this comands to trigger an instalation 
+Issue this commands to trigger an installation 
 
 1. Clone the repo and cd into the root dir.
 
 
-2. Instalation of Gateway API / Lambda / Cognito
+2. Installation of Gateway API / Lambda / Cognito
 
 ```bash
 Date=$(date +%D_%T); echo "infra_deploy $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: infra_deploy ENV:LEARNING $Date";git push origin master
@@ -52,7 +52,7 @@ Date=$(date +%D_%T); echo "infra_deploy $Date" > DeployTriggerFile.txt ; git add
 
 
 
-3. Instalation of S3 / Javascript code for DashBoard
+3. Installation of S3 / Javascript code for DashBoard
 
 ```bash
 Date=$(date +%D_%T); echo "DashBoard_setup $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: DashBoard_setup ENV:LEARNING $Date";git push origin master
@@ -188,5 +188,5 @@ AWS::RDS::DBInstance TAGS
 - 2 ENV  ENV:LEARNING and ENV:TESTING using commit message in github actions too
     - PREPRD coming soon
 - To Install everything from scratch use infra_deploy first, and then DashBoard_update_setup.
-
-
+- default App user : dashboard
+- To find Default user Pwd: See output of Github Action step "Install puppeteer jest and exec test" You can find process.env.DASHBOARD_PWD parameters.
