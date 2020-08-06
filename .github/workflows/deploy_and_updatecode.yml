@@ -51,9 +51,19 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
         aws-region: ${{ secrets.AWS_REGION }}
 
+    - name: Config variables for Testing
+      if: contains(github.event.head_commit.message, 'ENV:TESTING')
+      run: |
+        echo "::set-env name=ENV_TYPE::testing"
+
+    - name: Config variables for Preprod
+      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
+      run: |
+        echo "::set-env name=ENV_TYPE::preprod"
+
     - name: CloudFormation Deploy S3 Stacks
       run: | 
-        aws cloudformation deploy  --stack-name Scheduler-S3 --template-file CloudFormationStacks/Scheduler_S3.yml --no-fail-on-empty-changeset --parameter-overrides EnvType=testing
+        aws cloudformation deploy  --stack-name Scheduler-S3 --template-file CloudFormationStacks/Scheduler_S3.yml --no-fail-on-empty-changeset --parameter-overrides EnvType=${{ env.ENV_TYPE }}
         if test -f CloudFormationStacks/Scheduler_Cloudfront.yml; then aws cloudformation deploy  --stack-name Scheduler-Cloudfront --template-file CloudFormationStacks/Scheduler_Cloudfront.yml --no-fail-on-empty-changeset; fi
     - name: Copy files to S3 with the AWS CLI
       run: |
