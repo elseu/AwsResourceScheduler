@@ -178,3 +178,15 @@ AWS::RDS::DBInstance TAGS
       - 
         Key: "Scheduler:OverRide"
         Value: ""           
+
+## Some more Informations 
+
+- 3 main actions using commit message in github actions : ( infra_deploy python_update_code DashBoard_update_setup ) 
+    -  DashBoard_update_setup is to setup the web / Cognito
+    -  python_update_code just to deploy updated Python code
+    -  infra_deploy  CFN stack and also the python code will be deploy
+- 2 ENV  ENV:LEARNING and ENV:TESTING using commit message in github actions too
+    - PREPRD coming soon
+- To Install everything from scratch use infra_deploy first, and then DashBoard_update_setup.
+
+
