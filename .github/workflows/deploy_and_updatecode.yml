@@ -34,14 +34,23 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
         aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Configure AWS Credentials for ENV:TESTING
       if: contains(github.event.head_commit.message, 'ENV:TESTING')
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}         
-        
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Configure AWS Credentials for ENV:PREPROD
+      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
     - name: CloudFormation Deploy S3 Stacks
       run: | 
         aws cloudformation deploy  --stack-name Scheduler-S3 --template-file CloudFormationStacks/Scheduler_S3.yml --no-fail-on-empty-changeset --parameter-overrides EnvType=testing
@@ -81,14 +90,23 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
         aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Configure AWS Credentials for ENV:TESTING
       if: contains(github.event.head_commit.message, 'ENV:TESTING')
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}   
-        
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Configure AWS Credentials for ENV:PREPROD
+      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Copy files to S3 with the AWS CLI
       run: |
         BucketName=$(aws cloudformation list-exports --query "Exports[?Name=='CodeSourceBucketName'].Value" --no-paginate --output text )
@@ -128,13 +146,22 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
         aws-region: ${{ secrets.AWS_REGION }}
+
     - name: Configure AWS Credentials for ENV:TESTING
       if: contains(github.event.head_commit.message, 'ENV:TESTING')
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}   
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Configure AWS Credentials for ENV:PREPROD
+      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+        aws-region: ${{ secrets.AWS_REGION }}
         
     - name: apigateway get-sdk
       run: |     
