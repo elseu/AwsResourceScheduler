@@ -94,23 +94,23 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
             ErrorCachingMinTTL: 0
-  DNSZone:
-    Type: AWS::Route53::RecordSetGroup
-    Properties:
-      HostedZoneName: sandbox.els-lab.eu.
-      Comment: Zone apex alias targeted to Distribution Cloudfront.
-      RecordSets:
-        - Name:
-            Fn::Join:
-              - ''
-              - - resources-manager-
-                - Ref: EnvSubType
-                - .
-                - sandbox.els-lab.eu
-          Type: A
-          AliasTarget:
-            HostedZoneId: Z1FEI92LPKPRO4
-            DNSName:
-              Fn::GetAtt:
-                - CloudFrontDistribution
-                - DomainName
+#   DNSZone:
+#     Type: AWS::Route53::RecordSetGroup
+#     Properties:
+#       HostedZoneName: sandbox.els-lab.eu.
+#       Comment: Zone apex alias targeted to Distribution Cloudfront.
+#       RecordSets:
+#         - Name:
+#             Fn::Join:
+#               - ''
+#               - - resources-manager-
+#                 - Ref: EnvSubType
+#                 - .
+#                 - sandbox.els-lab.eu
+#           Type: A
+#           AliasTarget:
+#             HostedZoneId: Z1FEI92LPKPRO4
+#             DNSName:
+#               Fn::GetAtt:
+#                 - CloudFrontDistribution
+#                 - DomainName
