@@ -2,7 +2,7 @@ name: DeployAndUpdateCode
 on:
   push:
     branches:
-    - master
+    - sandbox
     tags:        
     - '*'
     paths:
@@ -27,39 +27,18 @@ jobs:
       with:
          args: zip SchedulerCheckAndApply.zip SchedulerCheckAndApply.py 
           
-    - name: Configure AWS Credentials for ENV:LEARNING
-      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+    - name: Configure AWS Credentials for ENV:SANDBOX
+      if: contains(github.event.head_commit.message, 'ENV:SANDBOX')
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SANDBOX }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SANDBOX }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Configure AWS Credentials for ENV:TESTING
-      if: contains(github.event.head_commit.message, 'ENV:TESTING')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Configure AWS Credentials for ENV:PREPROD
-      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Config variables for Testing
-      if: contains(github.event.head_commit.message, 'ENV:TESTING')
+    - name: Config variables for Sandbox r&d
+      if: contains(github.event.head_commit.message, 'ENV:SANDBOX')
       run: |
-        echo "::set-env name=ENV_TYPE::testing"
-
-    - name: Config variables for Preprod
-      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
-      run: |
-        echo "::set-env name=ENV_TYPE::preprod"
+        echo "::set-env name=ENV_TYPE::sandbox"
 
     - name: CloudFormation Deploy S3 Stacks
       run: | 
@@ -93,28 +72,12 @@ jobs:
       with:
          args: zip SchedulerCheckAndApply.zip SchedulerCheckAndApply.py 
          
-    - name: Configure AWS Credentials for ENV:LEARNING
-      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+    - name: Configure AWS Credentials for ENV:SANDBOX
+      if: contains(github.event.head_commit.message, 'ENV:SANDBOX')
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Configure AWS Credentials for ENV:TESTING
-      if: contains(github.event.head_commit.message, 'ENV:TESTING')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Configure AWS Credentials for ENV:PREPROD
-      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SANDBOX }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SANDBOX }}
         aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Copy files to S3 with the AWS CLI
@@ -149,30 +112,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
           
-    - name: Configure AWS Credentials for ENV:LEARNING
-      if: contains(github.event.head_commit.message, 'ENV:LEARNING')
+    - name: Configure AWS Credentials for ENV:SANDBOX
+      if: contains(github.event.head_commit.message, 'ENV:SANDBOX')
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_LEARNING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_LEARNING }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_SANDBOX }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_SANDBOX }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Configure AWS Credentials for ENV:TESTING
-      if: contains(github.event.head_commit.message, 'ENV:TESTING')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_TESTING }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_TESTING }}
-        aws-region: ${{ secrets.AWS_REGION }}
-
-    - name: Configure AWS Credentials for ENV:PREPROD
-      if: contains(github.event.head_commit.message, 'ENV:PREPROD')
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PREPROD }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PREPROD }}
-        aws-region: ${{ secrets.AWS_REGION }}
-        
     - name: apigateway get-sdk
       run: |     
             echo "DEBUG"
