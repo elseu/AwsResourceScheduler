@@ -109,7 +109,7 @@ Resources:
                 - sandbox.els-lab.eu
           Type: A
           AliasTarget:
-            HostedZoneId: Z1FEI92LPKPRO4
+            HostedZoneId: Z2FDTNDATAQYW2
             DNSName:
               Fn::GetAtt:
                 - CloudFrontDistribution
