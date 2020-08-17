@@ -37,6 +37,7 @@ Resources:
               - ''
               - - resources-manager-
                 - Ref: EnvSubType
+                - .
                 - sandbox.els-lab.eu
         Origins:
           - DomainName:
