@@ -36,7 +36,8 @@ Resources:
         Aliases:
           - Fn::Join:
               - ''
-              - - resources-manager
+              - - resources-manager-
+                - Ref: EnvSubType
                 - .larbiz-auth-
                 - Ref: EnvType
                 - .aws.larcier.com
@@ -112,7 +113,8 @@ Resources:
         - Name:
             Fn::Join:
               - ''
-              - - resources-manager
+              - - resources-manager-
+                - Ref: EnvSubType
                 - .
                 - Fn::Join:
                     - ''
