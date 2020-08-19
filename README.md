@@ -47,7 +47,7 @@ Issue this commands to trigger an installation
 2. Installation of Gateway API / Lambda / Cognito
 
 ```bash
-Date=$(date +%D_%T); echo "infra_deploy $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: infra_deploy ENV:LEARNING $Date";git push origin master
+Date=$(date +%D_%T); echo "infra_deploy $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: infra_deploy ENV:TESTING $Date";git push origin larbiz-auth
 ```
 
 
@@ -55,7 +55,7 @@ Date=$(date +%D_%T); echo "infra_deploy $Date" > DeployTriggerFile.txt ; git add
 3. Installation of S3 / Javascript code for DashBoard
 
 ```bash
-Date=$(date +%D_%T); echo "DashBoard_setup $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: DashBoard_setup ENV:LEARNING $Date";git push origin master
+Date=$(date +%D_%T); echo "DashBoard_setup $Date" > DeployTriggerFile.txt ; git add DeployTriggerFile.txt;git commit -m "Actions: DashBoard_setup ENV:TESTING $Date";git push origin larbiz-auth
 ```
 
 
