@@ -8,7 +8,6 @@ Parameters:
       - testing
       - preprod
       - prod
-    Default: preprod
   EnvSubType:
     Description: Environment Sub type.
     Type: String
@@ -18,11 +17,8 @@ Mappings:
     testing:
       #*.larciergroup-aws-testing.com (subdomain of *.larciergroup.com with subdomain) in us-east-1
       # certificate:  arn:aws:acm:us-east-1:266121229060:certificate/3c7c5e30-434c-441c-a8c9-ee1d51a3d7ba
-      certificate: arn:aws:acm:us-east-1:266121229060:certificate/a0454872-e04f-4a79-807d-07c36cad34f8
-    preprod:
-      #*.larciergroup-aws-testing.com (subdomain of *.larciergroup.com with subdomain) in us-east-1
-      # certificate:  arn:aws:acm:us-east-1:266121229060:certificate/3c7c5e30-434c-441c-a8c9-ee1d51a3d7ba
-      certificate: arn:aws:acm:us-east-1:725431391157:certificate/13f0ac13-40fa-437c-918a-dc6767df86dc
+      certificate: arn:aws:acm:eu-west-1:286335398933:certificate/dd0805d3-ea03-47b6-b732-e40dd369519e
+
                     
 
                     
@@ -39,11 +35,10 @@ Resources:
         Aliases:
           - Fn::Join:
               - ''
-              - - resources-manager-
-                - Ref: EnvSubType
-                - .larciergroup-aws-
+              - - resources-manager
+                - .larbiz-auth-
                 - Ref: EnvType
-                - .com
+                - .aws.larcier.com
         Origins:
           - DomainName:
               Fn::ImportValue:
@@ -107,23 +102,22 @@ Resources:
           - ''
           - - Fn::Join:
                 - ''
-                - - larciergroup-aws-
+                - - larbiz-auth-
                   - Ref: EnvType
-                  - .com
+                  - .aws.larcier.com
             - .
       Comment: Zone apex alias targeted to Distribution Cloudfront.
       RecordSets:
         - Name:
             Fn::Join:
               - ''
-              - - resources-manager-
-                - Ref: EnvSubType
+              - - resources-manager
                 - .
                 - Fn::Join:
                     - ''
-                    - - larciergroup-aws-
+                    - - larbiz-auth-
                       - Ref: EnvType
-                      - .com
+                      - .aws.larcier.com
           Type: A
           AliasTarget:
             HostedZoneId: Z2FDTNDATAQYW2
