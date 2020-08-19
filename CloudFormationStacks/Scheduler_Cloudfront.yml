@@ -37,7 +37,7 @@ Resources:
           - Fn::Join:
               - ''
               - - resources-manager-
-                - Ref: EnvSubType
+                - lbs-auth
                 - .
                 - larbiz-auth-testing.aws.larcier.com
         Origins:
@@ -105,7 +105,7 @@ Resources:
             Fn::Join:
               - ''
               - - resources-manager-
-                - Ref: EnvSubType
+                - lbs-auth
                 - .
                 - larbiz-auth-testing.aws.larcier.com
           Type: A
