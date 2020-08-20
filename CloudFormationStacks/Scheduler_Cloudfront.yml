@@ -28,7 +28,7 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: resources-manager
+        Comment: resources-manager-lbs-auth
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -37,9 +37,10 @@ Resources:
           - Fn::Join:
               - ''
               - - resources-manager-
-                - lbs-auth
-                - .
-                - larbiz-auth-testing.aws.larcier.com
+                - Ref: EnvSubType
+                - .larbiz-auth-
+                - Ref: EnvType
+                - .aws.larcier.com
         Origins:
           - DomainName:
               Fn::ImportValue:
@@ -98,16 +99,25 @@ Resources:
   DNSZone:
     Type: AWS::Route53::RecordSetGroup
     Properties:
-      HostedZoneName: larbiz-auth-testing.aws.larcier.com.
+      HostedZoneName: 
+        Fn::Join:
+          - ''
+          - - Fn::Join:
+                - ''
+                - - larbiz-auth-
+                  - Ref: EnvType
+                  - .aws.larcier.com
+            - .
       Comment: Zone apex alias targeted to Distribution Cloudfront.
       RecordSets:
         - Name:
             Fn::Join:
               - ''
               - - resources-manager-
-                - lbs-auth
-                - .
-                - larbiz-auth-testing.aws.larcier.com
+                - Ref: EnvSubType
+                - .larbiz-auth-
+                - Ref: EnvType
+                - .aws.larcier.com
           Type: A
           AliasTarget:
             HostedZoneId: Z2FDTNDATAQYW2
